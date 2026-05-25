@@ -1,5 +1,16 @@
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../bootstrap/app.php';
 
-echo "Basecode Framework Started";
+use Src\Infrastructure\Database\Database;
+
+try {
+
+    $db = new Database();
+
+    echo "Database Connected Successfully";
+
+} catch (\Exception $e) {
+
+    echo $e->getMessage();
+}

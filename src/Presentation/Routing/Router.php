@@ -1,0 +1,37 @@
+<?php
+
+namespace Src\Presentation\Routing;
+
+class Router
+{
+    private array $routes = [];
+
+    public function get(
+        string $path,
+        callable $handler
+    ): void {
+
+        $this->routes['GET'][$path] = $handler;
+    }
+
+    public function dispatch(
+        string $method,
+        string $uri
+    ): void {
+
+        $handler =
+            $this->routes[$method][$uri]
+            ?? null;
+
+        if (!$handler) {
+
+            http_response_code(404);
+
+            echo "404 Not Found";
+
+            return;
+        }
+
+        call_user_func($handler);
+    }
+}

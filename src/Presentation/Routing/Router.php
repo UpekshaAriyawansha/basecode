@@ -8,10 +8,26 @@ class Router
 
     public function get(
         string $path,
-        callable $handler
+        callable $handler,
+        array $middlewares = []
     ): void {
 
-        $this->routes['GET'][$path] = $handler;
+        $this->routes['GET'][$path] = [
+            'handler' => $handler,
+            'middlewares' => $middlewares
+        ];
+    }
+
+    public function post(
+        string $path,
+        callable $handler,
+        array $middlewares = []
+    ): void {
+
+        $this->routes['POST'][$path] = [
+            'handler' => $handler,
+            'middlewares' => $middlewares
+        ];
     }
 
     public function dispatch(
@@ -19,11 +35,11 @@ class Router
         string $uri
     ): void {
 
-        $handler =
+        $route =
             $this->routes[$method][$uri]
             ?? null;
 
-        if (!$handler) {
+        if (!$route) {
 
             http_response_code(404);
 
@@ -32,6 +48,24 @@ class Router
             return;
         }
 
-        call_user_func($handler);
+        foreach (
+            $route['middlewares']
+            as $middleware
+        ) {
+
+            $instance =
+                new $middleware();
+
+            $allowed =
+                $instance->handle();
+
+            if (!$allowed) {
+                return;
+            }
+        }
+
+        call_user_func(
+            $route['handler']
+        );
     }
 }

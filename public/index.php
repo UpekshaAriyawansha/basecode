@@ -2,15 +2,75 @@
 
 require_once __DIR__ . '/../bootstrap/app.php';
 
-use Src\Infrastructure\Database\Database;
+use Src\Presentation\Http\Request;
+use Src\Presentation\Routing\Router;
+use Src\Presentation\Http\Response;
+use Src\Presentation\Middleware\AuthMiddleware;
 
-try {
+use Modules\User\Presentation\Controllers\AuthController;
+use Modules\User\Presentation\Controllers\UserController;
 
-    $db = new Database();
+$request = new Request();
 
-    echo "Database Connected Successfully";
+$router = new Router();
 
-} catch (\Exception $e) {
+$authController =
+    new AuthController();
 
-    echo $e->getMessage();
-}
+$userController =
+    new UserController();
+
+$router->post(
+    '/api/auth/login',
+    [$authController, 'login']
+);
+
+$router->get(
+
+    '/api/me',
+
+    function () {
+
+        Response::json([
+
+            'user' => $_SERVER['user']
+
+        ]);
+
+    },
+
+    [
+        AuthMiddleware::class
+    ]
+
+);
+
+$router->get(
+
+    '/api/users',
+
+    [$userController, 'index'],
+
+    [
+        AuthMiddleware::class
+    ]
+
+);
+
+
+$router->post(
+
+    '/api/users',
+
+    [$userController, 'create'],
+
+    [
+        AuthMiddleware::class
+    ]
+
+);
+
+$router->dispatch(
+    $request->method(),
+    $request->uri()
+);

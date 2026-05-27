@@ -116,8 +116,22 @@ class Router
                     as $middleware
                 ) {
 
+                    if (is_array($middleware)) {
+
+                    $class =
+                        $middleware[0];
+
+                    $params =
+                        $middleware[1] ?? [];
+
+                    $instance =
+                        new $class($params);
+
+                } else {
+
                     $instance =
                         new $middleware();
+                }
 
                     $allowed =
                         $instance->handle();

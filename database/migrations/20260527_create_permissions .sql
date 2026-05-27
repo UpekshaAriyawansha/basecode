@@ -1,0 +1,13 @@
+CREATE TABLE permissions (
+
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    name VARCHAR(100) NOT NULL,
+
+    slug VARCHAR(100) NOT NULL UNIQUE,
+
+    description TEXT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+);

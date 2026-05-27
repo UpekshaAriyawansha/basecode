@@ -1,0 +1,18 @@
+[2026-05-27 12:45:13] Test Error in C:\xampp\htdocs\basecode\public\index.php:15
+[2026-05-27 12:45:51] Test Error in C:\xampp\htdocs\basecode\public\index.php:15
+[2026-05-27 13:22:23] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:23:21] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:23:22] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:23:59] syntax error, unexpected token "public" in C:\xampp\htdocs\basecode\modules\User\Application\Services\UserService.php:78
+[2026-05-27 13:28:25] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:28:58] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:29:14] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:31:52] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:37:04] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:37:09] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:37:41] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:38:04] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:38:05] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:38:05] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:38:06] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
+[2026-05-27 13:44:09] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\public\index.php:184

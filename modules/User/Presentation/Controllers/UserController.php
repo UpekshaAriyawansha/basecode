@@ -8,20 +8,26 @@ use Src\Presentation\Validation\Validator;
 
 use Modules\User\Infrastructure\Persistence\UserRepository;
 
+use Modules\User\Application\Services\UserService;
+
 class UserController extends Controller
 {
-    private UserRepository $repository;
+    // private UserRepository $repository;
 
-    public function __construct()
-    {
-        $this->repository =
-            new UserRepository();
-    }
+    private UserService $service;
+
+    public function __construct(
+        UserService $service
+            ) {
+
+                $this->service =
+                    $service;
+            }
 
     public function index(): void
     {
-        $users =
-            $this->repository->all();
+       $users =
+            $this->service->all();
 
         $this->json($users);
     }
@@ -30,9 +36,9 @@ class UserController extends Controller
         int $id
     ): void {
 
-        $user =
-            $this->repository
-                ->findById($id);
+       $user =
+            $this->service
+                ->find($id);
 
         if (!$user) {
 
@@ -95,7 +101,7 @@ class UserController extends Controller
             );
 
         $id =
-            $this->repository
+            $this->service
                 ->create($data);
 
         $this->success(
@@ -116,7 +122,7 @@ class UserController extends Controller
         );
 
         $updated =
-            $this->repository
+            $this->service
                 ->update(
                     $id,
                     $data
@@ -134,8 +140,8 @@ class UserController extends Controller
         int $id
     ): void {
 
-        $deleted =
-            $this->repository
+       $deleted =
+            $this->service
                 ->delete($id);
 
         $this->success(

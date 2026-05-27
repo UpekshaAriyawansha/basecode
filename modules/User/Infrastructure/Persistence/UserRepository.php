@@ -16,15 +16,27 @@ class UserRepository
         $this->pdo = $database->connection();
     }
 
+
     public function findByEmail(
         string $email
     ): ?array {
 
         $stmt = $this->pdo->prepare(
 
-            "SELECT * FROM users
-             WHERE email = :email
-             LIMIT 1"
+            "SELECT
+
+                users.*,
+
+                roles.slug AS role
+
+            FROM users
+
+            LEFT JOIN roles
+                ON roles.id = users.role_id
+
+            WHERE users.email = :email
+
+            LIMIT 1"
 
         );
 
@@ -32,10 +44,13 @@ class UserRepository
             'email' => $email
         ]);
 
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user =
+            $stmt->fetch(\PDO::FETCH_ASSOC);
 
         return $user ?: null;
     }
+
+
 
     public function all(): array
 {
@@ -147,6 +162,46 @@ public function delete(
     return $stmt->execute([
         'id' => $id
     ]);
+}
+
+
+public function permissions(
+    int $userId
+): array {
+
+    $stmt = $this->pdo->prepare(
+
+        "SELECT permissions.slug
+
+         FROM users
+
+         INNER JOIN roles
+            ON roles.id = users.role_id
+
+         INNER JOIN role_permissions
+            ON role_permissions.role_id = roles.id
+
+         INNER JOIN permissions
+            ON permissions.id =
+                role_permissions.permission_id
+
+         WHERE users.id = :id"
+
+    );
+
+    $stmt->execute([
+        'id' => $userId
+    ]);
+
+    return array_column(
+
+        $stmt->fetchAll(
+            \PDO::FETCH_ASSOC
+        ),
+
+        'slug'
+
+    );
 }
 
 

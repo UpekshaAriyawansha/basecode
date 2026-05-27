@@ -70,6 +70,42 @@ $router->post(
 
 );
 
+$router->get(
+
+    '/api/users/{id}',
+
+    [$userController, 'show'],
+
+    [
+        AuthMiddleware::class
+    ]
+
+);
+
+$router->put(
+
+    '/api/users/{id}',
+
+    [$userController, 'update'],
+
+    [
+        AuthMiddleware::class
+    ]
+
+);
+
+$router->delete(
+
+    '/api/users/{id}',
+
+    [$userController, 'delete'],
+
+    [
+        AuthMiddleware::class
+    ]
+
+);
+
 $router->dispatch(
     $request->method(),
     $request->uri()

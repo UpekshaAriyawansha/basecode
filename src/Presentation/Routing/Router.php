@@ -12,10 +12,12 @@ class Router
         array $middlewares = []
     ): void {
 
-        $this->routes['GET'][$path] = [
-            'handler' => $handler,
-            'middlewares' => $middlewares
-        ];
+        $this->addRoute(
+            'GET',
+            $path,
+            $handler,
+            $middlewares
+        );
     }
 
     public function post(
@@ -24,9 +26,57 @@ class Router
         array $middlewares = []
     ): void {
 
-        $this->routes['POST'][$path] = [
+        $this->addRoute(
+            'POST',
+            $path,
+            $handler,
+            $middlewares
+        );
+    }
+
+    public function put(
+        string $path,
+        callable $handler,
+        array $middlewares = []
+    ): void {
+
+        $this->addRoute(
+            'PUT',
+            $path,
+            $handler,
+            $middlewares
+        );
+    }
+
+    public function delete(
+        string $path,
+        callable $handler,
+        array $middlewares = []
+    ): void {
+
+        $this->addRoute(
+            'DELETE',
+            $path,
+            $handler,
+            $middlewares
+        );
+    }
+
+    private function addRoute(
+        string $method,
+        string $path,
+        callable $handler,
+        array $middlewares
+    ): void {
+
+        $this->routes[$method][] = [
+
+            'path' => $path,
+
             'handler' => $handler,
+
             'middlewares' => $middlewares
+
         ];
     }
 
@@ -35,37 +85,59 @@ class Router
         string $uri
     ): void {
 
-        $route =
-            $this->routes[$method][$uri]
-            ?? null;
+        $routes =
+            $this->routes[$method]
+            ?? [];
 
-        if (!$route) {
+        foreach ($routes as $route) {
 
-            http_response_code(404);
+            $pattern = preg_replace(
 
-            echo "404 Not Found";
+                '#\{([^/]+)\}#',
 
-            return;
-        }
+                '([^/]+)',
 
-        foreach (
-            $route['middlewares']
-            as $middleware
-        ) {
+                $route['path']
 
-            $instance =
-                new $middleware();
+            );
 
-            $allowed =
-                $instance->handle();
+            $pattern = "#^{$pattern}$#";
 
-            if (!$allowed) {
+            if (preg_match(
+                $pattern,
+                $uri,
+                $matches
+            )) {
+
+                array_shift($matches);
+
+                foreach (
+                    $route['middlewares']
+                    as $middleware
+                ) {
+
+                    $instance =
+                        new $middleware();
+
+                    $allowed =
+                        $instance->handle();
+
+                    if (!$allowed) {
+                        return;
+                    }
+                }
+
+                call_user_func_array(
+                    $route['handler'],
+                    $matches
+                );
+
                 return;
             }
         }
 
-        call_user_func(
-            $route['handler']
-        );
+        http_response_code(404);
+
+        echo "404 Not Found";
     }
 }

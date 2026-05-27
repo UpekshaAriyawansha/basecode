@@ -79,4 +79,75 @@ public function create(array $data): string
 
     return $this->pdo->lastInsertId();
 }
+
+public function findById(
+    int $id
+): ?array {
+
+    $stmt = $this->pdo->prepare(
+
+        "SELECT *
+         FROM users
+         WHERE id = :id
+         LIMIT 1"
+
+    );
+
+    $stmt->execute([
+        'id' => $id
+    ]);
+
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $user ?: null;
+}
+
+public function update(
+    int $id,
+    array $data
+): bool {
+
+    $stmt = $this->pdo->prepare(
+
+        "UPDATE users
+         SET
+
+            first_name = :first_name,
+            last_name  = :last_name,
+            email      = :email
+
+         WHERE id = :id"
+
+    );
+
+    return $stmt->execute([
+
+        'id' => $id,
+
+        'first_name' => $data['first_name'],
+
+        'last_name' => $data['last_name'],
+
+        'email' => $data['email']
+
+    ]);
+}
+
+public function delete(
+    int $id
+): bool {
+
+    $stmt = $this->pdo->prepare(
+
+        "DELETE FROM users
+         WHERE id = :id"
+
+    );
+
+    return $stmt->execute([
+        'id' => $id
+    ]);
+}
+
+
 }

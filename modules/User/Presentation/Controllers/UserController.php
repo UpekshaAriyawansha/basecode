@@ -66,6 +66,62 @@ class UserController
     ]);
 }
 
+public function show(
+    int $id
+): void {
+
+    $user =
+        $this->repository
+            ->findById($id);
+
+    if (!$user) {
+
+        Response::json([
+            'message' => 'User not found'
+        ], 404);
+
+        return;
+    }
+
+    Response::json($user);
+}
+
+public function update(
+    int $id
+): void {
+
+    $data = json_decode(
+        file_get_contents('php://input'),
+        true
+    );
+
+    $updated =
+        $this->repository->update(
+            $id,
+            $data
+        );
+
+    Response::json([
+
+        'updated' => $updated
+
+    ]);
+}
+
+public function delete(
+    int $id
+): void {
+
+    $deleted =
+        $this->repository->delete($id);
+
+    Response::json([
+
+        'deleted' => $deleted
+
+    ]);
+}
+
 
 
 }

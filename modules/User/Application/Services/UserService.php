@@ -3,13 +3,13 @@
 namespace Modules\User\Application\Services;
 
 use Modules\User\Infrastructure\Persistence\UserRepository;
-
 use Src\Infrastructure\Database\DatabaseManager;
-
 use Modules\User\Application\Events\UserCreatedEvent;
-
 use Src\Infrastructure\Cache\CacheManager;
-
+use Src\Infrastructure\Pagination\Paginator;
+use Modules\User\Presentation\Resources\UserResource;
+use Src\Core\Exceptions\BusinessException;
+use Src\Infrastructure\Events\EventDispatcher;
 
 class UserService
 {
@@ -17,105 +17,202 @@ class UserService
 
     private DatabaseManager $db;
 
+    private EventDispatcher $events;
+
     public function __construct(
-    UserRepository $repository,
-    DatabaseManager $db
-        ) {
 
-            $this->repository =
-                $repository;
+        UserRepository $repository,
 
-            $this->db =
-                $db;
-        }
+        DatabaseManager $db,
 
-public function all(): array
-    {
-        $cache =
-            CacheManager::driver();
+        EventDispatcher $events
 
-        $users =
-            $cache->get('users.all');
+    ) {
 
-        if ($users) {
+        $this->repository =
+            $repository;
 
-            return $users;
-        }
+        $this->db =
+            $db;
 
-        $users =
-            $this->repository->all();
-
-        $cache->put(
-            'users.all',
-            $users,
-            60
-        );
-
-        return $users;
+        $this->events =
+            $events;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Get Paginated Users
+    |--------------------------------------------------------------------------
+    */
+
+    public function all(
+        int $page = 1,
+        int $perPage = 10
+    ): array {
+
+        $users =
+            $this->repository
+                ->paginate(
+                    $page,
+                    $perPage
+                );
+
+        $users =
+            UserResource::collection(
+                $users
+            );
+
+        return Paginator::paginate(
+
+            $users,
+
+            $page,
+
+            $perPage
+
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Find Single User
+    |--------------------------------------------------------------------------
+    */
 
     public function find(
         int $id
     ): ?array {
 
-        return $this->repository
-            ->findById($id);
+        $user =
+            $this->repository
+                ->findById($id);
+
+        if (!$user) {
+
+            return null;
+        }
+
+        return UserResource::make(
+            $user
+        );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Create User
+    |--------------------------------------------------------------------------
+    */
 
+    public function create(
+        array $data
+    ): string {
 
+        $this->db->begin();
 
-public function create(
-    array $data
-): string {
+        try {
 
-    $this->db->begin();
+            /*
+            |--------------------------------------------------------------------------
+            | Hash Password
+            |--------------------------------------------------------------------------
+            */
 
-    try {
+            $data['password'] =
+                password_hash(
+                    $data['password'],
+                    PASSWORD_BCRYPT
+                );
 
-        $data['password'] =
-            password_hash(
-                $data['password'],
-                PASSWORD_BCRYPT
+            /*
+            |--------------------------------------------------------------------------
+            | Create User
+            |--------------------------------------------------------------------------
+            */
+
+            $id =
+                $this->repository
+                    ->create($data);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Clear Cache
+            |--------------------------------------------------------------------------
+            */
+
+            CacheManager::driver()
+                ->forget('users.all');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Dispatch Event
+            |--------------------------------------------------------------------------
+            */
+
+            $this->events->dispatch(
+
+                new UserCreatedEvent([
+
+                    'id' => $id,
+
+                    'email' =>
+                        $data['email']
+
+                ])
+
             );
 
-        $id =
-            $this->repository
-                ->create($data);
+            /*
+            |--------------------------------------------------------------------------
+            | Commit Transaction
+            |--------------------------------------------------------------------------
+            */
 
-        CacheManager::driver()
-            ->forget('users.all');
+            $this->db->commit();
 
-        $events =
-            $GLOBALS['events'];
+            return (string) $id;
 
-        $events->dispatch(
+        } catch (\Throwable $e) {
 
-            new UserCreatedEvent([
+            /*
+            |--------------------------------------------------------------------------
+            | Rollback Transaction
+            |--------------------------------------------------------------------------
+            */
 
-                'id' => $id,
+            $this->db->rollback();
 
-                'email' =>
-                    $data['email']
+            /*
+            |--------------------------------------------------------------------------
+            | Handle Duplicate Email
+            |--------------------------------------------------------------------------
+            */
 
-            ])
+            if (
+                str_contains(
+                    $e->getMessage(),
+                    'Duplicate entry'
+                )
+                &&
+                str_contains(
+                    $e->getMessage(),
+                    'email'
+                )
+            ) {
 
-        );
+                throw new BusinessException(
+                    'Email already exists'
+                );
+            }
 
-        $this->db->commit();
-
-        return $id;
-
-    } catch (\Throwable $e) {
-
-        $this->db->rollback();
-
-        throw $e;
+            throw $e;
+        }
     }
-}
 
-
+    /*
+    |--------------------------------------------------------------------------
+    | Update User
+    |--------------------------------------------------------------------------
+    */
 
     public function update(
         int $id,
@@ -128,6 +225,12 @@ public function create(
                 $data
             );
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete User
+    |--------------------------------------------------------------------------
+    */
 
     public function delete(
         int $id

@@ -15,30 +15,65 @@ class Database
 
             try {
 
+                $host =
+                    config(
+                        'database.host'
+                    );
+
+                $port =
+                    config(
+                        'database.port'
+                    );
+
+                $database =
+                    config(
+                        'database.database'
+                    );
+
+                $username =
+                    config(
+                        'database.username'
+                    );
+
+                $password =
+                    config(
+                        'database.password'
+                    );
+
                 self::$connection = new PDO(
 
                     sprintf(
 
-                        'mysql:host=%s;dbname=%s;charset=utf8mb4',
+                        'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
 
-                        $_ENV['DB_HOST'],
-                        $_ENV['DB_DATABASE']
+                        $host,
+
+                        $port,
+
+                        $database
 
                     ),
 
-                    $_ENV['DB_USERNAME'],
-                    $_ENV['DB_PASSWORD']
+                    $username,
+
+                    $password
 
                 );
 
                 self::$connection->setAttribute(
+
                     PDO::ATTR_ERRMODE,
+
                     PDO::ERRMODE_EXCEPTION
+
                 );
 
                 self::$connection->setAttribute(
+
                     PDO::ATTR_DEFAULT_FETCH_MODE,
+
                     PDO::FETCH_ASSOC
+
                 );
 
             } catch (PDOException $e) {

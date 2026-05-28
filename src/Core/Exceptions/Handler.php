@@ -3,6 +3,9 @@
 namespace Src\Core\Exceptions;
 
 use Throwable;
+use Src\Validation\ValidationException;
+use Src\Core\Exceptions\BusinessException;
+use Src\Infrastructure\Logging\Logger;
 
 class Handler
 {
@@ -21,45 +24,141 @@ class Handler
         );
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Handle Exceptions
+    |--------------------------------------------------------------------------
+    */
+
     public static function handleException(
         Throwable $exception
     ): void {
-
-        http_response_code(500);
 
         header(
             'Content-Type: application/json'
         );
 
-    $debug =
-        $_ENV['APP_DEBUG']
-        ?? false;
+        /*
+        |--------------------------------------------------------------------------
+        | Validation Exception
+        |--------------------------------------------------------------------------
+        */
 
-    $response = [
+        if (
+            $exception instanceof
+            ValidationException
+        ) {
 
-        'success' => false,
+            http_response_code(422);
 
-        'message' =>
-            'Internal Server Error'
+            echo json_encode([
 
-    ];
+                'success' => false,
 
-    if ($debug) {
+                'message' =>
+                    'Validation failed',
 
-        $response['exception'] =
-            $exception->getMessage();
+                'errors' =>
+                    $exception->errors()
 
-        $response['file'] =
-            $exception->getFile();
+            ]);
 
-        $response['line'] =
-            $exception->getLine();
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Business Exception
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $exception instanceof
+            BusinessException
+        ) {
+
+            http_response_code(400);
+
+            echo json_encode([
+
+                'success' => false,
+
+                'message' =>
+                    $exception->getMessage()
+
+            ]);
+
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generic Exceptions
+        |--------------------------------------------------------------------------
+        */
+
+        http_response_code(500);
+
+        $debug =
+            config('app.debug');
+
+        $response = [
+
+            'success' => false,
+
+            'message' =>
+                'Internal Server Error'
+
+        ];
+
+        if ($debug) {
+
+            $response['exception'] =
+                $exception->getMessage();
+
+            $response['file'] =
+                $exception->getFile();
+
+            $response['line'] =
+                $exception->getLine();
+        }
+
+        echo json_encode($response);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Log Exception
+        |--------------------------------------------------------------------------
+        */
+
+        Logger::channel()->error(
+
+            $exception->getMessage(),
+
+            [
+
+                'file' =>
+
+                    $exception->getFile(),
+
+                'line' =>
+
+                    $exception->getLine(),
+
+                'trace' =>
+
+                    $exception->getTraceAsString()
+
+            ]
+
+        );
     }
 
-    echo json_encode($response);
-
-            self::log($exception);
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Convert PHP Errors To Exceptions
+    |--------------------------------------------------------------------------
+    */
 
     public static function handleError(
         int $severity,
@@ -69,54 +168,16 @@ class Handler
     ): void {
 
         throw new \ErrorException(
+
             $message,
+
             0,
+
             $severity,
+
             $file,
+
             $line
-        );
-    }
-
-    private static function log(
-        Throwable $exception
-    ): void {
-
-        $logDir =
-            __DIR__ . '/../../../storage/logs';
-
-        if (!is_dir($logDir)) {
-
-            mkdir(
-                $logDir,
-                0777,
-                true
-            );
-        }
-
-        $logFile =
-            $logDir . '/app.log';
-
-        $message = sprintf(
-
-            "[%s] %s in %s:%d\n",
-
-            date('Y-m-d H:i:s'),
-
-            $exception->getMessage(),
-
-            $exception->getFile(),
-
-            $exception->getLine()
-
-        );
-
-        file_put_contents(
-
-            $logFile,
-
-            $message,
-
-            FILE_APPEND
 
         );
     }

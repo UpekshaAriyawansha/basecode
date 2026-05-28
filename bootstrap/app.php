@@ -5,17 +5,16 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Infrastructure/Support/helpers.php';
 
 use Dotenv\Dotenv;
-
 use Src\Core\Container\Container;
-
-
 use Src\Core\Exceptions\Handler;
-
-use Src\Core\Events\EventDispatcher;
-
+use Src\Infrastructure\Events\EventDispatcher;
 use Modules\User\Application\Events\UserCreatedEvent;
-
 use Modules\User\Application\Listeners\SendWelcomeEmailListener;
+use Src\Providers\AppServiceProvider;
+use Src\Providers\EventServiceProvider;
+use Src\Support\Config;
+use Src\Core\Providers\ProviderRepository;
+
 
 $dotenv = Dotenv::createImmutable(
     __DIR__ . '/../'
@@ -23,9 +22,43 @@ $dotenv = Dotenv::createImmutable(
 
 $dotenv->load();
 
+Config::load();
 
 $container =
     new Container();
+
+$providers =
+    config('providers.providers');
+
+$repository =
+    new ProviderRepository(
+        $container
+    );
+
+$repository->load(
+    $providers
+);
+
+/*
+|--------------------------------------------------------------------------
+| Register Providers
+|--------------------------------------------------------------------------
+*/
+
+$providers = [
+
+    AppServiceProvider::class,
+
+    EventServiceProvider::class
+
+];
+
+foreach ($providers as $provider) {
+
+    (new $provider(
+        $container
+    ))->register();
+}
 
 
 $GLOBALS['container'] =

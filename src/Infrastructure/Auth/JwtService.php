@@ -11,14 +11,17 @@ class JwtService
 
     public function __construct()
     {
-        $this->secret = env('JWT_SECRET');
+        $this->secret = config('jwt.secret');
     }
 
     public function generate(array $payload): string
     {
         $issuedAt = time();
 
-        $expire = $issuedAt + env('JWT_TTL', 3600);
+        $expire = $issuedAt + (int) config(
+                'jwt.ttl',
+                3600
+            );
 
         $tokenPayload = [
 

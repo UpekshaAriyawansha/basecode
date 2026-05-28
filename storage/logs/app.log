@@ -16,3 +16,8 @@
 [2026-05-27 13:38:05] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
 [2026-05-27 13:38:06] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:25
 [2026-05-27 13:44:09] Undefined array key "DB_NAME" in C:\xampp\htdocs\basecode\public\index.php:184
+[2026-05-28 07:32:38] SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it in C:\xampp\htdocs\basecode\src\Infrastructure\Database\Database.php:46
+[2026-05-28 10:40:22] Class "Src\Presentation\Requests\FormRequest" not found in C:\xampp\htdocs\basecode\modules\User\Presentation\Requests\StoreUserRequest.php:7
+[2026-05-28 10:40:48] Class "Src\Presentation\Requests\FormRequest" not found in C:\xampp\htdocs\basecode\modules\User\Presentation\Requests\StoreUserRequest.php:7
+[2026-05-28 10:52:59] SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'johnx@ample.com' for key 'email' in C:\xampp\htdocs\basecode\modules\User\Infrastructure\Persistence\UserRepository.php:91
+[2026-05-28 10:53:29] SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'johnx1@ample.com' for key 'email' in C:\xampp\htdocs\basecode\modules\User\Infrastructure\Persistence\UserRepository.php:91

@@ -5,42 +5,76 @@ require_once __DIR__ . '/../bootstrap/app.php';
 use Src\Presentation\Http\Request;
 use Src\Presentation\Routing\Router;
 use Src\Presentation\Http\Response;
-use Src\Presentation\Middleware\AuthMiddleware;
 
-use Modules\User\Presentation\Controllers\AuthController;
-use Modules\User\Presentation\Controllers\UserController;
+use Src\Presentation\Middleware\AuthMiddleware;
 use Src\Presentation\Middleware\RoleMiddleware;
 use Src\Presentation\Middleware\PermissionMiddleware;
 
-// throw new Exception('Test Error');
+use Src\Infrastructure\Cache\CacheManager;
+
+use Modules\User\Presentation\Controllers\AuthController;
+use Modules\User\Presentation\Controllers\UserController;
+use Modules\User\Presentation\Controllers\UploadController;
+
+/*
+|--------------------------------------------------------------------------
+| Application
+|--------------------------------------------------------------------------
+*/
 
 $request = new Request();
 
 $router = new Router();
 
-// $authController =
-//     new AuthController();
-
-// $userController =
-//     new UserController();
+/*
+|--------------------------------------------------------------------------
+| Container
+|--------------------------------------------------------------------------
+*/
 
 $container =
     $GLOBALS['container'];
 
+/*
+|--------------------------------------------------------------------------
+| Controllers
+|--------------------------------------------------------------------------
+*/
+
 $authController =
-    $container->get(
+    $container->make(
         AuthController::class
     );
 
 $userController =
-    $container->get(
+    $container->make(
         UserController::class
     );
 
+$uploadController =
+    $container->make(
+        UploadController::class
+    );
+
+/*
+|--------------------------------------------------------------------------
+| Auth Routes
+|--------------------------------------------------------------------------
+*/
+
 $router->post(
+
     '/api/auth/login',
+
     [$authController, 'login']
+
 );
+
+/*
+|--------------------------------------------------------------------------
+| Current User
+|--------------------------------------------------------------------------
+*/
 
 $router->get(
 
@@ -50,29 +84,27 @@ $router->get(
 
         Response::json([
 
-            'user' => $_SERVER['user']
+            'user' =>
+
+                $_SERVER['user']
 
         ]);
 
     },
 
     [
+
         AuthMiddleware::class
+
     ]
 
 );
 
-// $router->get(
-
-//     '/api/users',
-
-//     [$userController, 'index'],
-
-//     [
-//         AuthMiddleware::class
-//     ]
-
-// );
+/*
+|--------------------------------------------------------------------------
+| User Routes
+|--------------------------------------------------------------------------
+*/
 
 $router->get(
 
@@ -85,14 +117,16 @@ $router->get(
         AuthMiddleware::class,
 
         [
+
             PermissionMiddleware::class,
+
             ['users.view']
+
         ]
 
     ]
 
 );
-
 
 $router->post(
 
@@ -101,7 +135,9 @@ $router->post(
     [$userController, 'create'],
 
     [
+
         AuthMiddleware::class
+
     ]
 
 );
@@ -113,7 +149,9 @@ $router->get(
     [$userController, 'show'],
 
     [
+
         AuthMiddleware::class
+
     ]
 
 );
@@ -125,7 +163,9 @@ $router->put(
     [$userController, 'update'],
 
     [
+
         AuthMiddleware::class
+
     ]
 
 );
@@ -137,12 +177,18 @@ $router->delete(
     [$userController, 'delete'],
 
     [
+
         AuthMiddleware::class
+
     ]
 
 );
 
-
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
 
 $router->get(
 
@@ -153,6 +199,7 @@ $router->get(
         Response::json([
 
             'message' =>
+
                 'Welcome Admin'
 
         ]);
@@ -164,22 +211,83 @@ $router->get(
         AuthMiddleware::class,
 
         [
+
             RoleMiddleware::class,
+
             ['admin']
+
         ]
 
     ]
 
 );
 
+/*
+|--------------------------------------------------------------------------
+| Upload Routes
+|--------------------------------------------------------------------------
+*/
 
+$router->post(
 
+    '/api/upload',
 
+    [$uploadController, 'upload'],
 
-$router->dispatch(
-    $request->method(),
-    $request->uri()
+    [
+
+        AuthMiddleware::class
+
+    ]
+
 );
 
-// echo $_ENV['DB_DATABASE'];
-// die();
+/*
+|--------------------------------------------------------------------------
+| Cache Test
+|--------------------------------------------------------------------------
+*/
+
+$router->get(
+
+    '/api/cache-test',
+
+    function () {
+
+        CacheManager::driver()->put(
+
+            'name',
+
+            'Upeksha',
+
+            5
+
+        );
+
+        $value =
+            CacheManager::driver()->get(
+                'name'
+            );
+
+        Response::json([
+
+            'cache' => $value
+
+        ]);
+    }
+
+);
+
+/*
+|--------------------------------------------------------------------------
+| Dispatch Request
+|--------------------------------------------------------------------------
+*/
+
+$router->dispatch(
+
+    $request->method(),
+
+    $request->uri()
+
+);

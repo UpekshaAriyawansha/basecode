@@ -4,89 +4,120 @@ namespace Src\Core\Container;
 
 use ReflectionClass;
 use ReflectionParameter;
-use Exception;
 
 class Container
 {
-    private array $instances = [];
+    private array $bindings = [];
 
-    public function get(
-        string $class
-    )
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | Register Singleton
+    |--------------------------------------------------------------------------
+    */
+
+    public function singleton(
+        string $abstract,
+        callable $resolver
+    ): void {
+
+        $this->bindings[$abstract] =
+            $resolver;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resolve Class
+    |--------------------------------------------------------------------------
+    */
+
+    public function make(
+        string $abstract
+    ): mixed {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Bound Resolver
+        |--------------------------------------------------------------------------
+        */
+
         if (
-            isset($this->instances[$class])
+            isset(
+                $this->bindings[$abstract]
+            )
         ) {
 
-            return $this->instances[$class];
+            return $this->bindings[$abstract]();
         }
 
-        if (
-            !class_exists($class)
-        ) {
-
-            throw new Exception(
-                "Class {$class} not found"
-            );
-        }
+        /*
+        |--------------------------------------------------------------------------
+        | Reflection
+        |--------------------------------------------------------------------------
+        */
 
         $reflection =
-            new ReflectionClass($class);
+            new ReflectionClass(
+                $abstract
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | No Constructor
+        |--------------------------------------------------------------------------
+        */
 
         $constructor =
-            $reflection->getConstructor();
+            $reflection
+                ->getConstructor();
 
         if (!$constructor) {
 
-            $instance =
-                new $class();
-
-            $this->instances[$class] =
-                $instance;
-
-            return $instance;
+            return new $abstract();
         }
 
-        $dependencies = [];
+        /*
+        |--------------------------------------------------------------------------
+        | Resolve Dependencies
+        |--------------------------------------------------------------------------
+        */
 
-        foreach (
-            $constructor->getParameters()
-            as $parameter
-        ) {
+        $dependencies = array_map(
 
-            $dependencies[] =
-                $this->resolveDependency(
+            function (
+                ReflectionParameter $parameter
+            ) {
+
+                $type =
                     $parameter
-                );
-        }
+                        ->getType();
 
-        $instance =
-            $reflection->newInstanceArgs(
+                if (!$type) {
+
+                    throw new \Exception(
+
+                        'Cannot resolve dependency'
+
+                    );
+                }
+
+                return $this->make(
+                    $type->getName()
+                );
+            },
+
+            $constructor->getParameters()
+
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Instance
+        |--------------------------------------------------------------------------
+        */
+
+        return $reflection
+            ->newInstanceArgs(
                 $dependencies
             );
-
-        $this->instances[$class] =
-            $instance;
-
-        return $instance;
-    }
-
-    private function resolveDependency(
-        ReflectionParameter $parameter
-    )
-    {
-        $type =
-            $parameter->getType();
-
-        if (!$type) {
-
-            throw new Exception(
-                "Cannot resolve dependency"
-            );
-        }
-
-        return $this->get(
-            $type->getName()
-        );
     }
 }

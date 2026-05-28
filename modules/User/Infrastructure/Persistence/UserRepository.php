@@ -3,7 +3,10 @@
 namespace Modules\User\Infrastructure\Persistence;
 
 use Src\Infrastructure\Database\Database;
+
 use PDO;
+
+use Src\Infrastructure\Database\QueryBuilder;
 
 class UserRepository
 {
@@ -202,6 +205,28 @@ public function permissions(
         'slug'
 
     );
+}
+
+
+public function paginate(
+    int $page = 1,
+    int $perPage = 10
+): array {
+
+    $offset =
+        ($page - 1) * $perPage;
+
+    $query =
+        new QueryBuilder(
+            Database::connection()
+        );
+
+    return $query
+        ->table('users')
+        ->orderBy('id', 'DESC')
+        ->limit($perPage)
+        ->offset($offset)
+        ->get();
 }
 
 

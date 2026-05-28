@@ -3,12 +3,12 @@
 namespace Modules\User\Presentation\Controllers;
 
 use Src\Presentation\Controllers\Controller;
-
-use Src\Presentation\Validation\Validator;
-
+// use Src\Presentation\Validation\Validator;
 use Modules\User\Infrastructure\Persistence\UserRepository;
-
 use Modules\User\Application\Services\UserService;
+use Src\Presentation\Http\Response;
+use Src\Validation\Validator;
+use Modules\User\Presentation\Requests\StoreUserRequest;
 
 class UserController extends Controller
 {
@@ -24,13 +24,30 @@ class UserController extends Controller
                     $service;
             }
 
-    public function index(): void
+public function index(): void
     {
-       $users =
-            $this->service->all();
+        $page =
+            (int) (
+                $_GET['page']
+                ?? 1
+            );
 
-        $this->json($users);
+        $perPage =
+            (int) (
+                $_GET['per_page']
+                ?? 10
+            );
+
+        $users =
+            $this->service
+                ->all(
+                    $page,
+                    $perPage
+                );
+
+        Response::json($users);
     }
+
 
     public function show(
         int $id
@@ -53,64 +70,32 @@ class UserController extends Controller
         $this->json($user);
     }
 
+    
     public function create(): void
-    {
-        $data = json_decode(
-            file_get_contents('php://input'),
-            true
-        );
+{
+    $request =
+        new StoreUserRequest();
 
-        $validator =
-            new Validator();
+    $data =
+        $request->validate();
 
-        $valid =
-            $validator->validate(
+    $id =
 
-                $data,
+        $this->service
+            ->create($data);
 
-                [
+    $this->success(
 
-                    'first_name' => 'required',
+        'User created',
 
-                    'email' =>
-                        'required|email',
+        [
 
-                    'password' =>
-                        'required'
+            'id' => $id
 
-                ]
+        ]
 
-            );
-
-        if (!$valid) {
-
-            $this->json([
-
-                'errors' =>
-                    $validator->errors()
-
-            ], 422);
-
-            return;
-        }
-
-        $data['password'] =
-            password_hash(
-                $data['password'],
-                PASSWORD_BCRYPT
-            );
-
-        $id =
-            $this->service
-                ->create($data);
-
-        $this->success(
-            'User created',
-            [
-                'id' => $id
-            ]
-        );
-    }
+    );
+}
 
     public function update(
         int $id

@@ -3,6 +3,7 @@
 namespace Modules\User\Application\Listeners;
 
 use Modules\User\Application\Events\UserCreatedEvent;
+use Src\Infrastructure\Queue\QueueManager;
 
 class SendWelcomeEmailListener
 {
@@ -10,19 +11,18 @@ class SendWelcomeEmailListener
         UserCreatedEvent $event
     ): void {
 
-        file_put_contents(
+        QueueManager::driver()
+            ->push(
 
-            __DIR__ .
-            '/../../../../storage/logs/mail.log',
+                'SendWelcomeEmailJob',
 
-            "Welcome email sent to: " .
+                [
 
-            $event->user['email'] .
+                    'email' =>
+                        $event->user['email']
 
-            PHP_EOL,
+                ]
 
-            FILE_APPEND
-
-        );
+            );
     }
 }

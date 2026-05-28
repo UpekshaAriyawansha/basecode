@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Core\Events;
+namespace Src\Infrastructure\Events;
 
 class EventDispatcher
 {
@@ -19,12 +19,12 @@ class EventDispatcher
         object $event
     ): void {
 
-        $eventName =
+        $eventClass =
             get_class($event);
 
         if (
             !isset(
-                $this->listeners[$eventName]
+                $this->listeners[$eventClass]
             )
         ) {
 
@@ -32,7 +32,7 @@ class EventDispatcher
         }
 
         foreach (
-            $this->listeners[$eventName]
+            $this->listeners[$eventClass]
             as $listener
         ) {
 

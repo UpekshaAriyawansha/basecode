@@ -2,23 +2,29 @@
 
 namespace Src\Infrastructure\Cache;
 
+use Src\Infrastructure\Cache\Contracts\CacheDriverInterface;
+use Src\Infrastructure\Cache\Drivers\FileCacheDriver;
+use Src\Infrastructure\Cache\Drivers\RedisCacheDriver;
+
 class CacheManager
 {
     public static function driver():
-        CacheInterface
-    {
+        CacheDriverInterface {
 
-        $driver =
-            $_ENV['CACHE_DRIVER']
-            ?? 'file';
+        return match (
 
-        return match ($driver) {
+            config('cache.driver')
 
-            'file' =>
-                new FileCache(),
+        ) {
+
+            'redis' =>
+
+                new RedisCacheDriver(),
 
             default =>
-                new FileCache()
+
+                new FileCacheDriver()
+
         };
     }
 }

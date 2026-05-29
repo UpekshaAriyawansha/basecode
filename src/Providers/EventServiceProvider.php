@@ -2,29 +2,31 @@
 
 namespace Src\Providers;
 
+use Src\Core\Providers\ServiceProvider;
 use Src\Infrastructure\Events\EventDispatcher;
 
 class EventServiceProvider
-    extends ServiceProvider
+extends ServiceProvider
 {
-    public function register():
-        void {
-
-        $events =
-            new EventDispatcher();
-
+    public function register(): void
+    {
         /*
         |--------------------------------------------------------------------------
-        | Register In Container
+        | Event Dispatcher
         |--------------------------------------------------------------------------
         */
 
-        $this->container->bind(
+        $this->app->singleton(
 
             EventDispatcher::class,
 
-            fn () => $events
+            fn () => new EventDispatcher()
 
         );
+    }
+
+    public function boot(): void
+    {
+        //
     }
 }

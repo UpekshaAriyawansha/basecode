@@ -6,12 +6,10 @@ use Src\Core\Providers\ServiceProvider;
 use Src\Infrastructure\Events\EventDispatcher;
 use Src\Infrastructure\Database\DatabaseManager;
 
-class AppServiceProvider
-extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
-    public function register():
-        void {
-
+    public function register(): void
+    {
         $this->app->singleton(
 
             EventDispatcher::class,

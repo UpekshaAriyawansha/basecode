@@ -2,10 +2,13 @@
 
 namespace Src\Providers;
 
+use Src\Core\Providers\ServiceProvider;
+
 use Src\Infrastructure\Database\DatabaseManager;
+use Src\Infrastructure\Events\EventDispatcher;
 
 class AppServiceProvider
-    extends ServiceProvider
+extends ServiceProvider
 {
     public function register():
         void {
@@ -16,12 +19,31 @@ class AppServiceProvider
         |--------------------------------------------------------------------------
         */
 
-        $this->container->bind(
+        $this->app->singleton(
 
             DatabaseManager::class,
 
             fn () => new DatabaseManager()
 
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Event Dispatcher
+        |--------------------------------------------------------------------------
+        */
+
+        $this->app->singleton(
+
+            EventDispatcher::class,
+
+            fn () => new EventDispatcher()
+
+        );
+    }
+
+    public function boot(): void
+    {
+        //
     }
 }

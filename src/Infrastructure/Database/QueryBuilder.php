@@ -29,6 +29,12 @@ class QueryBuilder
         $this->db = $db;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Table
+    |--------------------------------------------------------------------------
+    */
+
     public function table(
         string $table
     ): self {
@@ -37,6 +43,12 @@ class QueryBuilder
 
         return $this;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Where
+    |--------------------------------------------------------------------------
+    */
 
     public function where(
         string $column,
@@ -52,6 +64,12 @@ class QueryBuilder
         return $this;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Order By
+    |--------------------------------------------------------------------------
+    */
+
     public function orderBy(
         string $column,
         string $direction = 'ASC'
@@ -66,6 +84,12 @@ class QueryBuilder
         return $this;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Limit
+    |--------------------------------------------------------------------------
+    */
+
     public function limit(
         int $limit
     ): self {
@@ -75,6 +99,12 @@ class QueryBuilder
         return $this;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Offset
+    |--------------------------------------------------------------------------
+    */
+
     public function offset(
         int $offset
     ): self {
@@ -83,6 +113,12 @@ class QueryBuilder
 
         return $this;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get Results
+    |--------------------------------------------------------------------------
+    */
 
     public function get(): array
     {
@@ -126,6 +162,163 @@ class QueryBuilder
 
         return $stmt->fetchAll(
             PDO::FETCH_ASSOC
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | First Result
+    |--------------------------------------------------------------------------
+    */
+
+    public function first(): ?array
+    {
+        $this->limit(1);
+
+        $results =
+            $this->get();
+
+        return $results[0]
+            ?? null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Find By ID
+    |--------------------------------------------------------------------------
+    */
+
+    public function find(
+        int $id
+    ): ?array {
+
+        return $this
+            ->where('id', $id)
+            ->first();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Insert
+    |--------------------------------------------------------------------------
+    */
+
+    public function insert(
+        array $data
+    ): bool {
+
+        $columns =
+            implode(
+                ', ',
+                array_keys($data)
+            );
+
+        $placeholders =
+            implode(
+                ', ',
+                array_fill(
+                    0,
+                    count($data),
+                    '?'
+                )
+            );
+
+        $sql = sprintf(
+
+            "INSERT INTO %s (%s) VALUES (%s)",
+
+            $this->table,
+
+            $columns,
+
+            $placeholders
+
+        );
+
+        $stmt =
+            $this->db->prepare($sql);
+
+        return $stmt->execute(
+            array_values($data)
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update
+    |--------------------------------------------------------------------------
+    */
+
+    public function update(
+        array $data
+    ): bool {
+
+        $fields = [];
+
+        foreach (
+            array_keys($data)
+            as $column
+        ) {
+
+            $fields[] =
+                "{$column} = ?";
+        }
+
+        $sql =
+            "UPDATE {$this->table} SET " .
+            implode(', ', $fields);
+
+        if ($this->where) {
+
+            $sql .=
+                " WHERE " .
+                implode(
+                    ' AND ',
+                    $this->where
+                );
+        }
+
+        $stmt =
+            $this->db->prepare($sql);
+
+        return $stmt->execute(
+
+            array_merge(
+
+                array_values($data),
+
+                $this->bindings
+
+            )
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete
+    |--------------------------------------------------------------------------
+    */
+
+    public function delete(): bool
+    {
+        $sql =
+            "DELETE FROM {$this->table}";
+
+        if ($this->where) {
+
+            $sql .=
+                " WHERE " .
+                implode(
+                    ' AND ',
+                    $this->where
+                );
+        }
+
+        $stmt =
+            $this->db->prepare($sql);
+
+        return $stmt->execute(
+            $this->bindings
         );
     }
 }

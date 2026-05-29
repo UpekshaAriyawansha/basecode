@@ -27,6 +27,8 @@ Config::load();
 $container =
     new Container();
 
+// $container->test();
+
 $providers =
     config('providers.providers');
 

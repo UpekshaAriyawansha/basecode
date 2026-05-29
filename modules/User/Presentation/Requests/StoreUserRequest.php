@@ -5,34 +5,20 @@ namespace Modules\User\Presentation\Requests;
 use Src\Presentation\Requests\FormRequest;
 
 class StoreUserRequest
-    extends FormRequest
+extends FormRequest
 {
-    public function rules():
-        array {
-
+    public function rules(): array
+    {
         return [
 
-            'first_name' => [
+            'first_name' =>
+                'required',
 
+            'email' =>
+                'required|email',
+
+            'password' =>
                 'required'
-
-            ],
-
-            'email' => [
-
-                'required',
-
-                'email'
-
-            ],
-
-            'password' => [
-
-                'required',
-
-                'min:6'
-
-            ]
 
         ];
     }

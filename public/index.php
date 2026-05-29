@@ -16,6 +16,8 @@ use Modules\User\Presentation\Controllers\AuthController;
 use Modules\User\Presentation\Controllers\UserController;
 use Modules\User\Presentation\Controllers\UploadController;
 
+use Modules\User\Domain\Models\User;
+
 /*
 |--------------------------------------------------------------------------
 | Application
@@ -277,6 +279,67 @@ $router->get(
     }
 
 );
+
+// $router->get(
+
+//     '/api/orm-test',
+
+//     function () {
+
+//         User::create([
+
+//             'first_name' => 'ORM',
+
+//             'last_name' => 'User',
+
+//             'email' => 'orm@example.com',
+
+//             'password' => password_hash(
+
+//                 '123456',
+
+//                 PASSWORD_BCRYPT
+
+//             )
+
+//         ]);
+
+//         Response::json([
+
+//             'message' =>
+
+//                 'User created'
+
+//         ]);
+//     }
+
+// );
+
+
+
+$router->get(
+
+    '/api/relation-test',
+
+    function () {
+
+        $user =
+            User::find(1);
+
+        Response::json([
+
+            'user' => $user,
+
+            'role' =>
+
+                $user->role()
+
+        ]);
+    }
+
+);
+
+
 
 /*
 |--------------------------------------------------------------------------

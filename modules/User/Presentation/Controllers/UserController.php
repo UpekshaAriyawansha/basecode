@@ -72,30 +72,27 @@ public function index(): void
 
     
     public function create(): void
-{
-    $request =
-        new StoreUserRequest();
+    {
+        $request =
+            new StoreUserRequest();
 
-    $data =
-        $request->validate();
+        $data =
+            $request->validate();
 
-    $id =
+        $id =
+            $this->service
+                ->create($data);
 
-        $this->service
-            ->create($data);
+        $this->success(
 
-    $this->success(
+            'User created',
 
-        'User created',
+            [
+                'id' => $id
+            ]
 
-        [
-
-            'id' => $id
-
-        ]
-
-    );
-}
+        );
+    }
 
     public function update(
         int $id

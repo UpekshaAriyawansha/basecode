@@ -12,15 +12,13 @@ return new class extends Migration
 
         $db->exec(
 
-            "CREATE TABLE roles (
+            "CREATE TABLE products (
 
                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-                name VARCHAR(100) NOT NULL,
+                name VARCHAR(255) NOT NULL,
 
-                slug VARCHAR(100) NOT NULL UNIQUE,
-
-                description TEXT NULL,
+                price DECIMAL(10,2) NOT NULL,
 
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
@@ -36,7 +34,7 @@ return new class extends Migration
 
         $db->exec(
 
-            'DROP TABLE roles'
+            "DROP TABLE products"
 
         );
     }
